@@ -1,6 +1,6 @@
 # Elavator Sys
 ## Preparations
-Before run the project, you need to install node and npm.
+Before run the project, you need to install Node.js and npm.
 - installation
   ```
   npm init -y
@@ -13,7 +13,7 @@ Please operate the following steps under /03_remote_control
     ```
     node server.js
     ```
-- run the client and monitor
+- run the client and central control
     ```
     node client.js
     node centralcontrol.js
