@@ -10,7 +10,7 @@ const moveElevator = () => {
     }
 
     socket.send(JSON.stringify({
-        type: 'moveElevator',
+        type: 'moveAElevator',
         elevatorId: elevatorId,
         targetFloor: targetFloor
     }));

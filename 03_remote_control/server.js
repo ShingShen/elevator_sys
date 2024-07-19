@@ -53,7 +53,7 @@ server.on('connection', (ws) => {
     ws.on('message', (msg) => {
         const data = JSON.parse(msg);
         
-        if (data.type === 'moveElevator') {
+        if (data.type === 'moveAElevator') {
             let elevator;
             if (data.elevatorId === '1') {
                 elevator = elevator1;
@@ -61,11 +61,9 @@ server.on('connection', (ws) => {
                 elevator = elevator2;
             }
             elevator.move(data.targetFloor);
-        } else {
-            const { currentFloor, desiredFloor } = data;
-            
-            const elevator1Dist = Math.abs(elevator1.current_floor-currentFloor);
-            const elevator2Dist = Math.abs(elevator2.current_floor-currentFloor);
+        } else if (data.type == 'callTheNearestElevator') {            
+            const elevator1Dist = Math.abs(elevator1.current_floor-data.currentFloor);
+            const elevator2Dist = Math.abs(elevator2.current_floor-data.currentFloor);
         
             let selectedElevator;
             if (elevator1Dist <= elevator2Dist) {
@@ -73,10 +71,9 @@ server.on('connection', (ws) => {
             } else {
                 selectedElevator = elevator2;
             }
-        
-            selectedElevator.move(currentFloor).then(() => selectedElevator.move(desiredFloor));
-        }
 
+            selectedElevator.move(data.currentFloor).then(() => selectedElevator.move(data.desiredFloor));
+        }
     });
 });
 

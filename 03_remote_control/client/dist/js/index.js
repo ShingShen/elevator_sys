@@ -1,7 +1,10 @@
 const socket = new WebSocket('ws://localhost:8080');
 
-socket.onmessage = function(event) {
+socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
+    if (data.type === 'elevatorUpdate') {
+        updateElevatorDisplay(data.id, data.floor);
+    }
     updateElevatorDisplay(data.id, data.floor);
 };
 
@@ -34,7 +37,11 @@ const callElevator = () => {
         return;
     }
     
-    socket.send(JSON.stringify({currentFloor, desiredFloor}));
+    socket.send(JSON.stringify({
+        type: 'callTheNearestElevator',
+        currentFloor: currentFloor, 
+        desiredFloor: desiredFloor
+    }));
 }
 
 const initializeElevators = () => {
