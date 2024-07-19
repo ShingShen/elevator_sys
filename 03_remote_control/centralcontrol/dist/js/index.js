@@ -23,7 +23,7 @@ socket.onmessage = (event) => {
     }
 };
 
-const updateElevatorDisplay = (elevatorId, floor) => {
+const updateElevatorDisplay = (elevatorId = 1, floor = 1) => {
     const elevatorDiv = document.getElementById(`elevator${elevatorId}`);
     const floors = elevatorDiv.querySelectorAll('.floor');
     let indicator = elevatorDiv.querySelector('.elevator-indicator');

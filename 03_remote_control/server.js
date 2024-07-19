@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const server = new WebSocket.Server({ port: 8080 })
 
 class Elevator {
-    constructor(id) {
+    constructor(id = 1) {
         this.id = id;
         this.current_floor = 1;
         this.isMoving = false;
@@ -12,7 +12,7 @@ class Elevator {
         console.log(`Elevator ${this.id} is on F${this.current_floor}`);
     }
 
-    async move(floor) {
+    async move(floor = 1) {
         if (this.isMoving) {
             return;
         }
