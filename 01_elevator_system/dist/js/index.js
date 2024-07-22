@@ -1,5 +1,5 @@
 class Elevator {
-    constructor(id) {
+    constructor(id = 1) {
       this.id = id;
       this.current_floor = 1;
       this.isMoving = false;
@@ -12,7 +12,7 @@ class Elevator {
       console.log(`Elevator ${this.id} is on floor ${this.current_floor}`);
     }
 
-    async move(floor) {
+    async move(floor = 1) {
       if (this.isMoving) {
         return;
       } 
@@ -21,14 +21,14 @@ class Elevator {
       while (this.current_floor !== floor) {
         if (floor > this.current_floor) {
             ++this.current_floor;
+            this.display_floor();
         } else {
             --this.current_floor;
+            this.display_floor();
         }
         this.updateDisplay();
       }
-      
       this.isMoving = false;
-      this.display_floor();
     }
 
     updateDisplay() {
@@ -54,15 +54,17 @@ const callElevator = () => {
       return;
     }
 
-    const elevator1Dist = Math.abs(elevator1.current_floor-currentFloor);
-    const elevator2Dist = Math.abs(elevator2.current_floor-currentFloor);
-
-    let selectedElevator;
-    if (elevator1Dist <= elevator2Dist) {
-        selectedElevator = elevator1;
-    } else {
-        selectedElevator = elevator2;
+    if (elevator1.isMoving == false && elevator2.isMoving == false) {
+      const elevator1Dist = Math.abs(elevator1.current_floor-currentFloor);
+      const elevator2Dist = Math.abs(elevator2.current_floor-currentFloor);
+      if (elevator1Dist <= elevator2Dist) {
+          elevator1.move(currentFloor).then(() => elevator1.move(desiredFloor));
+      } else if (elevator1Dist > elevator2Dist) {
+          elevator2.move(currentFloor).then(() => elevator2.move(desiredFloor));
+      }
+    } else if (elevator1.isMoving == true && elevator2.isMoving == false) {
+        elevator2.move(currentFloor).then(() => elevator2.move(desiredFloor));
+    } else if (elevator1.isMoving == false && elevator2.isMoving == true) {
+        elevator1.move(currentFloor).then(() => elevator1.move(desiredFloor));
     }
-
-    selectedElevator.move(selectedElevator.current_floor, currentFloor).then(() => selectedElevator.move(currentFloor, desiredFloor));
 }
