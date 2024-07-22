@@ -13,7 +13,7 @@ class Elevator {
     }
 
     async move(floor = 1) {
-        if (this.isMoving) {
+        if (this.isMoving == true) {
             return;
         }
         this.isMoving = true;
@@ -61,18 +61,20 @@ server.on('connection', (ws) => {
                 elevator = elevator2;
             }
             elevator.move(data.targetFloor);
-        } else if (data.type == 'callTheNearestElevator') {            
-            const elevator1Dist = Math.abs(elevator1.current_floor-data.currentFloor);
-            const elevator2Dist = Math.abs(elevator2.current_floor-data.currentFloor);
-        
-            let selectedElevator;
-            if (elevator1Dist <= elevator2Dist) {
-                selectedElevator = elevator1;
-            } else {
-                selectedElevator = elevator2;
+        } else if (data.type == 'callTheNearestElevator') {                    
+            if (elevator1.isMoving == false && elevator2.isMoving == false) {
+                const elevator1Dist = Math.abs(elevator1.current_floor-data.currentFloor);
+                const elevator2Dist = Math.abs(elevator2.current_floor-data.currentFloor);
+                if (elevator1Dist <= elevator2Dist) {
+                    elevator1.move(data.currentFloor).then(() => elevator1.move(data.desiredFloor));
+                } else if (elevator1Dist > elevator2Dist) {
+                    elevator2.move(data.currentFloor).then(() => elevator2.move(data.desiredFloor));
+                }
+            } else if (elevator1.isMoving == true && elevator2.isMoving == false) {
+                elevator2.move(data.currentFloor).then(() => elevator2.move(data.desiredFloor));
+            } else if (elevator1.isMoving == false && elevator2.isMoving == true) {
+                elevator1.move(data.currentFloor).then(() => elevator1.move(data.desiredFloor));
             }
-
-            selectedElevator.move(data.currentFloor).then(() => selectedElevator.move(data.desiredFloor));
         }
     });
 });
