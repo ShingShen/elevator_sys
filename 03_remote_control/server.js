@@ -53,7 +53,7 @@ server.on('connection', (ws) => {
     ws.on('message', (msg) => {
         const data = JSON.parse(msg);
         
-        if (data.type === 'moveAElevator') {
+        if (data.type === 'moveAnElevator') {
             let elevator;
             if (data.elevatorId === '1') {
                 elevator = elevator1;
