@@ -46,13 +46,38 @@ class Elevator {
 
 const elevator1 = new Elevator(1);
 const elevator2 = new Elevator(2);
+let reqQueue = [];
+
+const sendRequest = (reqQueue) => {
+    if (reqQueue.length === 0) {
+      return;
+    }
+  
+    const req = reqQueue[0];
+    if (elevator1.isMoving === false && elevator2.isMoving === false) {
+      reqQueue.shift();
+      const elevator1Dist = Math.abs(elevator1.current_floor-req[0]);
+      const elevator2Dist = Math.abs(elevator2.current_floor-req[0]);
+      if (elevator1Dist <= elevator2Dist) {
+          elevator1.move(req[0]).then(() => elevator1.move(req[1])).then(() => sendRequest(reqQueue));
+      } else if (elevator1Dist > elevator2Dist) {
+          elevator2.move(req[0]).then(() => elevator2.move(req[1])).then(() => sendRequest(reqQueue));
+      }
+    } else if (elevator1.isMoving === true && elevator2.isMoving === false) {
+      reqQueue.shift();
+      elevator2.move(req[0]).then(() => elevator2.move(req[1])).then(() => sendRequest(reqQueue));
+    } else if (elevator1.isMoving === false && elevator2.isMoving === true) {
+      reqQueue.shift();
+      elevator1.move(req[0]).then(() => elevator1.move(req[1])).then(() => sendRequest(reqQueue));
+    }
+  }
 
 server.on('connection', (ws) => {
     console.log('Client connected');
 
     ws.on('message', (msg) => {
         const data = JSON.parse(msg);
-        
+
         if (data.type === 'moveAnElevator') {
             let elevator;
             if (data.elevatorId === '1') {
@@ -61,20 +86,9 @@ server.on('connection', (ws) => {
                 elevator = elevator2;
             }
             elevator.move(data.targetFloor);
-        } else if (data.type == 'callTheNearestElevator') {                    
-            if (elevator1.isMoving == false && elevator2.isMoving == false) {
-                const elevator1Dist = Math.abs(elevator1.current_floor-data.currentFloor);
-                const elevator2Dist = Math.abs(elevator2.current_floor-data.currentFloor);
-                if (elevator1Dist <= elevator2Dist) {
-                    elevator1.move(data.currentFloor).then(() => elevator1.move(data.desiredFloor));
-                } else if (elevator1Dist > elevator2Dist) {
-                    elevator2.move(data.currentFloor).then(() => elevator2.move(data.desiredFloor));
-                }
-            } else if (elevator1.isMoving == true && elevator2.isMoving == false) {
-                elevator2.move(data.currentFloor).then(() => elevator2.move(data.desiredFloor));
-            } else if (elevator1.isMoving == false && elevator2.isMoving == true) {
-                elevator1.move(data.currentFloor).then(() => elevator1.move(data.desiredFloor));
-            }
+        } else if (data.type == 'callTheNearestElevator') { 
+            reqQueue.push([data.currentFloor, data.desiredFloor]);
+            sendRequest(reqQueue);
         }
     });
 });
