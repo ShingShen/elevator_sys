@@ -13,7 +13,7 @@ class Elevator {
     }
 
     async move(floor = 1) {
-      if (this.isMoving == true) {
+      if (this.isMoving === true) {
         return;
       } 
       this.isMoving = true;
@@ -44,27 +44,41 @@ class Elevator {
   
 const elevator1 = new Elevator(1);
 const elevator2 = new Elevator(2);
+let reqQueue = [];
 
 const callElevator = () => {
-    const currentFloor = parseInt(document.getElementById('currentFloor').value);
-    const desiredFloor = parseInt(document.getElementById('desiredFloor').value);
+  const currentFloor = parseInt(document.getElementById('currentFloor').value);
+  const desiredFloor = parseInt(document.getElementById('desiredFloor').value);
 
-    if (isNaN(currentFloor) || isNaN(desiredFloor) || currentFloor < 1 || currentFloor > 10 || desiredFloor < 1 || desiredFloor > 10) {
-      alert('Please enter valid floor numbers (1-10)');
-      return;
-    }
+  if (isNaN(currentFloor) || isNaN(desiredFloor) || currentFloor < 1 || currentFloor > 10 || desiredFloor < 1 || desiredFloor > 10) {
+    alert('Please enter valid floor numbers (1-10)');
+    return;
+  }
 
-    if (elevator1.isMoving == false && elevator2.isMoving == false) {
-      const elevator1Dist = Math.abs(elevator1.current_floor-currentFloor);
-      const elevator2Dist = Math.abs(elevator2.current_floor-currentFloor);
-      if (elevator1Dist <= elevator2Dist) {
-          elevator1.move(currentFloor).then(() => elevator1.move(desiredFloor));
-      } else if (elevator1Dist > elevator2Dist) {
-          elevator2.move(currentFloor).then(() => elevator2.move(desiredFloor));
-      }
-    } else if (elevator1.isMoving == true && elevator2.isMoving == false) {
-        elevator2.move(currentFloor).then(() => elevator2.move(desiredFloor));
-    } else if (elevator1.isMoving == false && elevator2.isMoving == true) {
-        elevator1.move(currentFloor).then(() => elevator1.move(desiredFloor));
+  reqQueue.push([currentFloor, desiredFloor]);
+  sendRequest();
+}
+
+const sendRequest = () => {
+  if (reqQueue.length === 0) {
+    return;
+  }
+
+  const req = reqQueue[0];
+  if (elevator1.isMoving === false && elevator2.isMoving === false) {
+    reqQueue.shift();
+    const elevator1Dist = Math.abs(elevator1.current_floor-req[0]);
+    const elevator2Dist = Math.abs(elevator2.current_floor-req[0]);
+    if (elevator1Dist <= elevator2Dist) {
+        elevator1.move(req[0]).then(() => elevator1.move(req[1])).then(() => sendRequest());
+    } else if (elevator1Dist > elevator2Dist) {
+        elevator2.move(req[0]).then(() => elevator2.move(req[1])).then(() => sendRequest());
     }
+  } else if (elevator1.isMoving === true && elevator2.isMoving === false) {
+    reqQueue.shift();
+    elevator2.move(req[0]).then(() => elevator2.move(req[1])).then(() => sendRequest());
+  } else if (elevator1.isMoving === false && elevator2.isMoving === true) {
+    reqQueue.shift();
+    elevator1.move(req[0]).then(() => elevator1.move(req[1])).then(() => sendRequest());
+  }
 }
